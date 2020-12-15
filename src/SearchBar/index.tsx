@@ -11,8 +11,6 @@ import React, {
   useRef
 } from 'react'
 
-const delayWhenUserNotTyping = 1500
-
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
@@ -32,11 +30,12 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 interface SearchBarProps {
-  onClick: (e?: SyntheticEvent) => {}
+  onSearch: (e?: SyntheticEvent) => {}
   onContentChange: (content: string) => void
+  waitForFire: number
 }
 
-export const SearchBar: FunctionComponent<SearchBarProps> = ({ onClick, onContentChange }) => {
+export const SearchBar: FunctionComponent<SearchBarProps> = ({ onSearch, onContentChange, waitForFire }) => {
   const classes = useStyles()
   const timeoutRef = useRef<any>(null)
 
@@ -45,9 +44,9 @@ export const SearchBar: FunctionComponent<SearchBarProps> = ({ onClick, onConten
       clearTimeout(timeoutRef.current)
     }
     timeoutRef.current = setTimeout(() => {
-      onClick()
+      onSearch()
       timeoutRef.current = null
-    }, delayWhenUserNotTyping)
+    }, waitForFire)
   }
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +59,7 @@ export const SearchBar: FunctionComponent<SearchBarProps> = ({ onClick, onConten
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
-    onClick()
+    onSearch()
   }
 
   return (
@@ -74,7 +73,7 @@ export const SearchBar: FunctionComponent<SearchBarProps> = ({ onClick, onConten
       <IconButton
         type='button'
         className={classes.iconButton}
-        onClick={onClick}
+        onClick={onSearch}
       >
         <SearchIcon />
       </IconButton>
@@ -82,3 +81,4 @@ export const SearchBar: FunctionComponent<SearchBarProps> = ({ onClick, onConten
   )
 }
 
+export default SearchBar
