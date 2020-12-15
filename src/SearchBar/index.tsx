@@ -1,15 +1,17 @@
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
 import Paper from '@material-ui/core/Paper'
+import { makeStyles } from '@material-ui/core/styles'
 import SearchIcon from '@material-ui/icons/Search'
 import React, {
+  ChangeEvent,
+  FormEvent,
   FunctionComponent,
   SyntheticEvent,
-  useEffect,
-  useRef,
-  useState
+  useRef
 } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+
+const delayWhenUserNotTyping = 1500
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -31,42 +33,33 @@ const useStyles = makeStyles((theme) => ({
 
 interface SearchBarProps {
   onClick: (e?: SyntheticEvent) => {}
-  keyword: {
-    keyword: string
-    setKeyword: React.Dispatch<React.SetStateAction<string>>
-  }
+  setKeyword: React.Dispatch<React.SetStateAction<string>>
 }
 
-export const SearchBar: FunctionComponent<SearchBarProps> = ({
-  onClick,
-  keyword
-}) => {
+export const SearchBar: FunctionComponent<SearchBarProps> = ({ onClick, setKeyword }) => {
   const classes = useStyles()
-  const [throttle, setThrottle] = useState(false)
-
-  useEffect(() => {
-    if (!throttle) {
-      // onClick()
-      // console.log('click in effect')
-      setThrottle(true)
-    }
-    setTimeout(() => setThrottle(false), 2000)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyword.keyword])
-  
   const timeoutRef = useRef<any>(null)
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    keyword.setKeyword(event.target.value)
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+
+  const fireSearchIfNotKeepTyping = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
     timeoutRef.current = setTimeout(() => {
-      console.log('click')
       onClick()
       timeoutRef.current = null
-    }, 1500)
+    }, delayWhenUserNotTyping)
   }
 
-  const onSubmit = e => { 
-    e.preventDefault()
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setKeyword(event.target.value)
+    fireSearchIfNotKeepTyping()
+  }
+
+  const onSubmit = (event: FormEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
     onClick()
   }
 
@@ -88,3 +81,4 @@ export const SearchBar: FunctionComponent<SearchBarProps> = ({
     </Paper>
   )
 }
+

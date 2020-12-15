@@ -1,16 +1,17 @@
-import axios, { AxiosError, AxiosResponse } from 'axios'
-import React, { SyntheticEvent, useRef, useState } from 'react'
+import axios, { AxiosResponse } from 'axios'
+import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Cell } from './Cell'
-import { SearchBar } from './SearchBar'
-import { IGitApiResponse, Item } from './types'
-import { NotificationContainer, NotificationManager } from 'react-notifications'
+import { gitApiUrl } from '../config'
+import { SearchBar } from '../SearchBar'
+import { IGitApiResponse, Item } from '../types'
+import { showNotification } from '../utils'
+import ScaleLoader from 'react-spinners/ScaleLoader'
 
 const startToScrollIn = 100
-const url = 'https://api.github.com/search/repositories'
 const PER_PAGE = 50
 const SUCCESSFUL = 200
-const REACH_RATE_LIMIT = 403
+const EXCEED_RATE_LIMIT = 403
 
 const WholeWrapper = styled.div`
   height: 100%;
@@ -20,11 +21,18 @@ const WholeWrapper = styled.div`
   background: rgba(0, 0, 0, 0.1);
 `
 
-export const searchReposByPage: (
+const LoaderContain = styled.div`
+  height: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+const searchReposByPage: (
   pageNo: number,
   keyword: string
 ) => Promise<AxiosResponse<IGitApiResponse>> = async (pageNo, keyword) => {
-  const result: AxiosResponse<IGitApiResponse> = await axios.get(url, {
+  const result: AxiosResponse<IGitApiResponse> = await axios.get(gitApiUrl, {
     params: {
       q: keyword,
       per_page: PER_PAGE,
@@ -35,10 +43,11 @@ export const searchReposByPage: (
 }
 
 export const InfiniteScroll = () => {
-  const [page, setPage] = useState<number>(0)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [data, setData] = useState<Item[]>([])
   const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const [page, setPage] = useState<number>(0)
+  const [isThrottle, setIsThrottle] = useState<boolean>(false)
+  const [showLoader, setShowLoader] = useState<boolean>(false)
+  const [data, setData] = useState<Item[]>([])
   const [keyword, setKeyword] = useState<string>('')
 
   const handleLoad = async () => {
@@ -52,8 +61,8 @@ export const InfiniteScroll = () => {
     const scrollHappen =
       scrollHeight - (clientHeight + scrollTop) < startToScrollIn
 
-    if (!isLoading && scrollHappen && keyword !== '') {
-      setIsLoading(true)
+    if (!isThrottle && scrollHappen && keyword !== '') {
+      setIsThrottle(true)
       const {
         status,
         data: { items }
@@ -62,12 +71,15 @@ export const InfiniteScroll = () => {
         setPage(page + 1)
         setData([...data, ...items])
       }
-      setIsLoading(false)
+      setIsThrottle(false)
     }
   }
 
-  const onSearch = async (e?: SyntheticEvent) => {
+  const onSearch = async () => {
     if (keyword === '') return
+    if (isThrottle) return
+    setIsThrottle(true)
+    setShowLoader(true)
     try {
       const {
         data: { items }
@@ -75,17 +87,33 @@ export const InfiniteScroll = () => {
       setPage(page + 1)
       setData(items)
     } catch (error) {
-      console.log(error)
+      const status = error.response.status
+      if (status === EXCEED_RATE_LIMIT) showNotification()
+    } finally {
+      setShowLoader(false)
+      setIsThrottle(false)
     }
   }
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
       <WholeWrapper ref={wrapperRef} onScroll={handleLoad}>
-        <SearchBar onClick={onSearch} keyword={{keyword, setKeyword}}  ></SearchBar>
-        {data.map((v) => {
+        <SearchBar onClick={onSearch} setKeyword={setKeyword}></SearchBar>
+        {!showLoader && data.map((v) => {
           return <Cell data={v} key={`${v.id}-${page}`} />
         })}
+        {(showLoader) && (
+          <LoaderContain>
+            <ScaleLoader
+              width={12}
+              radius={4}
+              margin={7}
+              height={80}
+              color='#36D7B7'
+              loading={showLoader}
+            />
+          </LoaderContain>
+        )}
       </WholeWrapper>
     </div>
   )

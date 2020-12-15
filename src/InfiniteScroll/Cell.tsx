@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react'
-import moment from 'moment'
 import styled from 'styled-components'
-import { Item } from './types'
+import { Item } from '../types'
 import Link from '@material-ui/core/Link'
 import StarOutlineIcon from '@material-ui/icons/StarOutline'
+import { getFromNow } from '../utils'
 
 const CardContain = styled.div`
   display: flex;
@@ -31,12 +31,6 @@ const InfoContent = styled.div`
   line-height: 30px;
 `
 
-const NameField = styled.a`
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 30px;
-`
-
 const DescField = styled.div`
   font-size: 17px;
   line-height: 30px;
@@ -50,7 +44,6 @@ const Row = styled.div`
   align-items: center;
   width: 100%;
 `
-
 interface CellProps {
   data: Item
 }
@@ -65,11 +58,7 @@ export const Cell: FunctionComponent<CellProps> = ({ data }) => {
     html_url
   } = data
 
-  const getFromNow = (date) => () => {
-    const m = moment(date)
-    return m.fromNow()
-  }
-  const updatedFrom = `updated at ${getFromNow(updated_at)()}`
+  const updatedFrom = `updated at ${getFromNow(updated_at)}`
   return (
     <CardContain>
       <CardEle>
