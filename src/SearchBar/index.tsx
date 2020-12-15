@@ -33,10 +33,10 @@ const useStyles = makeStyles((theme) => ({
 
 interface SearchBarProps {
   onClick: (e?: SyntheticEvent) => {}
-  setKeyword: React.Dispatch<React.SetStateAction<string>>
+  onContentChange: (content: string) => void
 }
 
-export const SearchBar: FunctionComponent<SearchBarProps> = ({ onClick, setKeyword }) => {
+export const SearchBar: FunctionComponent<SearchBarProps> = ({ onClick, onContentChange }) => {
   const classes = useStyles()
   const timeoutRef = useRef<any>(null)
 
@@ -51,7 +51,7 @@ export const SearchBar: FunctionComponent<SearchBarProps> = ({ onClick, setKeywo
   }
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setKeyword(event.target.value)
+    onContentChange(event.target.value)
     fireSearchIfNotKeepTyping()
   }
 

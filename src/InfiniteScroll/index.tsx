@@ -95,10 +95,14 @@ export const InfiniteScroll = () => {
     }
   }
 
+  const onContentChange = (newContent) => {
+    setKeyword(newContent)
+  }
+
   return (
     <div style={{ height: '100%', width: '100%' }}>
       <WholeWrapper ref={wrapperRef} onScroll={handleLoad}>
-        <SearchBar onClick={onSearch} setKeyword={setKeyword}></SearchBar>
+        <SearchBar onClick={onSearch} onContentChange={onContentChange}></SearchBar>
         {!showLoader && data.map((v) => {
           return <Cell data={v} key={`${v.id}-${page}`} />
         })}
