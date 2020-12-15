@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react'
 import styled from 'styled-components'
-import { Item } from '../types'
+import { Item } from './types'
 import Link from '@material-ui/core/Link'
 import StarOutlineIcon from '@material-ui/icons/StarOutline'
-import { getFromNow } from '../utils'
+import { getFromNow } from './utils'
 
 const CardContain = styled.div`
   display: flex;
@@ -37,6 +37,7 @@ const DescField = styled.div`
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  color: #715f5f;
 `
 
 const Row = styled.div`
@@ -50,7 +51,7 @@ interface CellProps {
 
 export const Cell: FunctionComponent<CellProps> = ({ data }) => {
   const {
-    name,
+    full_name,
     description,
     stargazers_count,
     language,
@@ -64,14 +65,14 @@ export const Cell: FunctionComponent<CellProps> = ({ data }) => {
       <CardEle>
         <InfoContent>
           <Link href={html_url} target='_blank' rel='noreferrer'>
-            {name}
+            {full_name}
           </Link>
           <DescField>{description}</DescField>
           <Row>
             <StarOutlineIcon />{' '}
             <span style={{ color: '#bfaa13', marginLeft: '4px' }}>{stargazers_count}</span>{' '}
             <span style={{ color: '#8e8b76', margin: '0 4px' }}>Language: {language}</span>
-            {updatedFrom}
+            <span style={{ color: '#3272ab'}}>{updatedFrom}</span>
           </Row>
         </InfoContent>
       </CardEle>
