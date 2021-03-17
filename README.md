@@ -1,3 +1,8 @@
+## Application goal
+implement infinite scroll on searching git repository by keyword
+
+![search repo](/public/screen1.png)
+
 ## Available Scripts
 
 In the project directory, you can run:
